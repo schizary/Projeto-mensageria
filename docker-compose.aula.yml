@@ -1,0 +1,15 @@
+# consome da subscription real da aula (projeto serjava-demo) em vez do emulador.
+# uso: docker compose -f docker-compose.yml -f docker-compose.aula.yml up --build
+#
+# o caminho da chave vem do arquivo .env (que não é versionado), por exemplo:
+#   CAMINHO_CHAVE_PUBSUB=C:/Users/voce/segredos/sa-grupo-h-key.json
+
+services:
+  consumer:
+    environment:
+      DOTNET_ENVIRONMENT: Aula
+      # anula o emulador definido no docker-compose.yml; sem isso o consumer ignoraria o Pub/Sub real.
+      PubSub__HostEmulador: ""
+      GOOGLE_APPLICATION_CREDENTIALS: /segredos/sa-key.json
+    volumes:
+      - ${CAMINHO_CHAVE_PUBSUB:?defina CAMINHO_CHAVE_PUBSUB no arquivo .env}:/segredos/sa-key.json:ro

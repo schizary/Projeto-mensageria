@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: pedidos
       POSTGRES_PASSWORD: pedidos
     ports:
-      - "5432:5432"
+      - "${PORTA_POSTGRES:-5432}:5432"
     volumes:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - pgdata:/var/lib/postgresql/data
@@ -29,7 +29,7 @@ services:
         PROJECT: Pedidos.Consumer
     environment:
       ConnectionStrings__Pedidos: Host=postgres;Port=5432;Database=pedidos;Username=pedidos;Password=pedidos
-      PubSub__HostDoEmulador: pubsub:8085
+      PubSub__HostEmulador: pubsub:8085
     depends_on:
       postgres:
         condition: service_healthy

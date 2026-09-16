@@ -4,3 +4,7 @@ obj/
 .idea/
 *.user
 .env
+
+# credenciais do google cloud: nunca versionar.
+*-key.json
+segredos/

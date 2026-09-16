@@ -40,6 +40,26 @@ curl "http://localhost:5000/orders?customer.id=7788"
 
 Para rodar a API e o consumidor fora do Docker (debug no Visual Studio / Rider), suba só a infraestrutura com `docker compose up postgres pubsub` e rode `dotnet run --project src/Pedidos.Consumer` e `dotnet run --project src/Pedidos.Api`. Os `appsettings.json` já apontam para `localhost`.
 
+## Pub/Sub da aula
+
+Por padrão o projeto usa o emulador. Para consumir da subscription real do grupo (`projects/serjava-demo/subscriptions/grupo-h`):
+
+1. Salve a chave `sa-grupo-h-key.json` **fora do repositório**. O `.gitignore` bloqueia `*-key.json` como proteção, mas o lugar dela é fora daqui.
+2. Crie um arquivo `.env` na raiz (ele não é versionado) apontando para a chave:
+   ```
+   CAMINHO_CHAVE_PUBSUB=C:/Users/voce/segredos/sa-grupo-h-key.json
+   ```
+3. Suba com o override:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.aula.yml up --build
+   ```
+
+Fora do Docker, defina `DOTNET_ENVIRONMENT=Aula` e `GOOGLE_APPLICATION_CREDENTIALS` com o caminho da chave antes de `dotnet run --project src/Pedidos.Consumer`. Os identificadores ficam em `src/Pedidos.Consumer/appsettings.Aula.json`.
+
+A service account tem apenas `roles/pubsub.subscriber`: o grupo **consome**, mas não publica nem cria tópico ou assinatura. Por isso o modo aula desliga `CriarRecursosSeNaoExistirem`, e o `Pedidos.Publisher` só funciona com o emulador — no Pub/Sub real, quem publica é o professor.
+
+Para inspecionar mensagens sem consumi-las, rode o `gcloud pubsub subscriptions pull` **sem** `--auto-ack`: com ele, as mensagens são confirmadas e não chegam mais ao consumer.
+
 ## Modelo de dados (DER)
 
 ![DER do banco de dados](database/der.svg)

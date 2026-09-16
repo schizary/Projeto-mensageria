@@ -1,5 +1,7 @@
 using Google.Api.Gax;
 using Google.Cloud.PubSub.V1;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Pedidos.Shared.Mensageria;
 
 namespace Pedidos.Consumer;
@@ -51,11 +53,26 @@ public sealed class ConsumidorPedidosWorker(
             // (em produção, o ideal é configurar uma dead-letter topic).
             return SubscriberClient.Reply.Ack;
         }
+        catch (Exception erro) when (EhConflitoConcorrencia(erro))
+        {
+            // duas mensagens cadastraram o mesmo cliente/vendedor/produto ao mesmo tempo.
+            // na reentrega o cadastro já existe e o pedido é gravado normalmente.
+            logger.LogWarning(
+                "Mensagem {IdMensagem} em conflito com outra processada ao mesmo tempo; será reentregue",
+                mensagem.MessageId);
+            return SubscriberClient.Reply.Nack;
+        }
         catch (Exception erro)
         {
-            // erro transitório (banco fora do ar, conflito de concorrência...): o Pub/Sub reentrega.
+            // erro transitório (banco fora do ar, por exemplo): o Pub/Sub reentrega.
             logger.LogError(erro, "Falha ao processar mensagem {IdMensagem}; será reentregue", mensagem.MessageId);
             return SubscriberClient.Reply.Nack;
         }
+    }
+
+    private static bool EhConflitoConcorrencia(Exception erro)
+    {
+        return erro is DbUpdateException { InnerException: PostgresException excecaoBanco }
+            && excecaoBanco.SqlState == PostgresErrorCodes.UniqueViolation;
     }
 }
