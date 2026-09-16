@@ -1,6 +1,10 @@
 # Projeto Mensageria — Pedidos (C# / .NET 8 + Google Pub/Sub + PostgreSQL)
+Disciplina: Computação em Nuvem 2 Curso: Desenvolvimento de Software Multiplataforma (DSM) - FATEC Membros da Equipe:
+Gustavo Schizari
+
 
 Um consumidor lê pedidos de um sistema de vendas de marketplace publicados no **Google Pub/Sub**, persiste tudo em um banco relacional (**PostgreSQL**) e uma **API REST** permite consultar os pedidos.
+
 
 ```
  Publisher (demo) ──► [ Pub/Sub: tópico "pedidos" ] ──► Pedidos.Consumer ──► PostgreSQL ◄── Pedidos.Api ◄── HTTP
