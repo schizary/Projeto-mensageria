@@ -215,10 +215,3 @@ Apenas a estrutura de items do pedido: `{ "items": [ ... ] }`.
 **Categoria.** No payload a categoria vem no item, então `item_pedido` guarda `category_id` e `sub_category_id`. As duas apontam para a tabela `categoria`, que tem auto-relacionamento.
 
 **Rotas.** No ASP.NET Core, segmentos literais têm prioridade sobre parâmetros, então `/orders/financial-summary` nunca é confundido com `/orders/{uuid}`.
-
-## Entregáveis
-
-- [ ] Demonstração do projeto funcionando (roteiro: `docker compose up`, publicar pedidos, mostrar logs do consumidor, chamar os endpoints no Swagger)
-- [ ] DER do banco de dados (seção acima / `database/schema.sql`)
-- [ ] Fontes do projeto no Git
-- [ ] Commits de **todos** os membros do grupo
