@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: pedidos
+      POSTGRES_USER: pedidos
+      POSTGRES_PASSWORD: pedidos
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pedidos -d pedidos"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command: gcloud beta emulators pubsub start --project=projeto-mensageria --host-port=0.0.0.0:8085
+    ports:
+      - "8085:8085"
+
+  consumer:
+    build:
+      context: .
+      args:
+        PROJECT: Pedidos.Consumer
+    environment:
+      ConnectionStrings__Pedidos: Host=postgres;Port=5432;Database=pedidos;Username=pedidos;Password=pedidos
+      PubSub__HostDoEmulador: pubsub:8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pubsub:
+        condition: service_started
+    restart: on-failure
+
+  api:
+    build:
+      context: .
+      args:
+        PROJECT: Pedidos.Api
+    environment:
+      ConnectionStrings__Pedidos: Host=postgres;Port=5432;Database=pedidos;Username=pedidos;Password=pedidos
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
