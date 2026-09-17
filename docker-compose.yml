@@ -28,7 +28,7 @@ services:
       args:
         PROJECT: Pedidos.Consumer
     environment:
-      ConnectionStrings__Pedidos: Host=postgres;Port=5432;Database=pedidos;Username=pedidos;Password=pedidos
+      ConnectionStrings__Pedidos: Host=postgres;Port=5432;Database=pedidos;Username=pedidos;Password=pedidos;Maximum Pool Size=20
       PubSub__HostEmulador: pubsub:8085
     depends_on:
       postgres:

@@ -14,6 +14,10 @@ public sealed class ConsumidorPedidosWorker(
 {
     private static readonly TimeSpan PrazoParada = TimeSpan.FromSeconds(15);
 
+    // limita quantas mensagens ficam em processamento ao mesmo tempo. sem esse limite o consumer
+    // ocupa todas as conexões do postgres e a api fica sem nenhuma.
+    private const int MaximoMensagensSimultaneas = 20;
+
     protected override async Task ExecuteAsync(CancellationToken cancelamento)
     {
         if (opcoes.CriarRecursosSeNaoExistirem)
@@ -27,7 +31,13 @@ public sealed class ConsumidorPedidosWorker(
         var assinante = await new SubscriberClientBuilder
         {
             SubscriptionName = opcoes.NomeAssinatura,
-            EmulatorDetection = EmulatorDetection.EmulatorOrProduction
+            EmulatorDetection = EmulatorDetection.EmulatorOrProduction,
+            Settings = new SubscriberClient.Settings
+            {
+                FlowControlSettings = new FlowControlSettings(
+                    maxOutstandingElementCount: MaximoMensagensSimultaneas,
+                    maxOutstandingByteCount: null)
+            }
         }.BuildAsync(cancelamento);
 
         using var registroParada = cancelamento.Register(
